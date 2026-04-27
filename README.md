@@ -1,0 +1,169 @@
+--Powershell ch.sh--
+  ##Finding Files and Searching Content##
+    Get-ChildItem -Path C:\ -Recurse -Include *flag*, *secret*, *cred* -ErrorAction SilentlyContinue
+    Searching for a flag: Get-ChildItem -Recurse | Select-String "CTF{"
+    
+    ##History command##
+      -Get-Content (Get-PSReadlineOption).HistorySavePath 
+      -Get-Content $env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+      
+    ##Account Reletad##
+      -Get-LocalUser: Lists all local user accounts.
+        Find specific details: Get-LocalUser -Name "guest" | Select-Object * (Check for interesting descriptions or last logon times).
+        Filter for active accounts: Get-LocalUser | Where-Object Enabled -eq True
+        
+      -Get-LocalGroupMember: Shows who is in a specific group.
+        Critical check: Get-LocalGroupMember -Group "Administrators"
+        
+      -New-LocalUser / Add-LocalGroupMember: Used for persistence if you have admin rights.
+          New-LocalUser -Name "Hacker" -NoPassword.
+          Add-LocalGroupMember -Group "Administrators" -Member "Hacker"                      ----Persistance
+
+      ##Active Directory (AD) Account Enumeration##
+        Get a list of AD Commands Available
+          -Get-Command -Module activedirectory
+        Get ADPolicy
+          Get-ADDefaultDomainPasswordPolicy
+          
+        Check for any Fine-Grained Password Policies
+          -Get-ADFineGrainedPasswordPolicy -Filter {name -like "*"}
+        
+        Get Forest details
+          -Get-ADForest
+
+        Get Domain details:
+          -Get-ADDomain
+
+        Get AD Groups
+          -Get-ADGroup -Filter *
+
+        Get a groups details
+          -Get-ADGroup -Identity ''
+
+        Get a list of a groups members
+          -Get-ADGroupMember -Identity '*' -Recursive
+          
+        Get AD users
+          -Get-ADUser -Filter 'Name -like "*"'
+
+        To see additional properties, not just the default set
+          -Get-ADUser -Identity 'Nina.Webster' -Properties Description
+          Get Name Property from the Active Directory Group named 'Domain Admins'
+          
+        Get Name Property from the Active Directory Group named 'Domain Admins'
+         (Get-AdGroupMember -Identity 'domain admins').Name
+          Get-AdGroupMember -Identity 'domain admins' | select name
+      
+        Get Active Directory Group 'System' Admin Names 'LvL 1'
+          (Get-AdGroupMember -Identity "System Admins LV1").Name
+        
+        Get Active Directory Group 'System Admin' Names
+         (Get-AdGroupMember -Identity "System Admins").Name
+         
+        Get Active Directory Group 'System' Admin Names 'LVL 2'
+          (Get-AdGroupMember -Identity "System Admins LV2").Name
+
+
+        Find Disabled users
+          -get-aduser -filter {Enabled -eq "FALSE"} -properties name, enabled
+
+        Enable that user
+          -Enable-ADAccount -Identity guest
+
+        Change the password
+          -Set-AdAccountPassword -Identity guest -NewPassword (ConvertTo-SecureString -AsPlaintext -String "PassWord12345!!" -Force)
+        Add the user to an Admin Group
+          -Add-ADGroupMember -Identity "Domain Admins" -Members guest
+
+        Get Distinguished Name to match AD format
+          -Get-ADuser -filter * | select distinguishedname, name
+
+        Create a new user
+          -New-ADUser -Name "Bad.Guy" -AccountPassword (ConvertTo-SecureString -AsPlaintext -String "PassWord12345!!" -Force) -path "OU=3RD PLT,OU=CCO,OU=3RDBN,OU=WARRIORS,DC=army,DC=warriors"
+
+          Enable the user
+            -Enable-ADAccount -Identity "Bad.Guy"
+
+        Remove User
+          -Remove-ADUser -Identity "Bad.Guy"
+
+        Remove From Group
+          -Remove-ADGroupMember -Identity "Domain Admins" -Members guest
+
+        Get All Domain Admin Accounts
+          Get-AdGroupMember -identity "Domain Admins" -Recursive | %{Get-ADUser -identity $_.DistinguishedName}   
+          Get-AdGroupMember -identity "Domain Admins" -Recursive | %{Get-ADUser -identity $_.DistinguishedName} | select name, Enabled  
+
+        Get ALL Enterprise Admin accounts
+          -Get-AdGroupMember -identity "Enterprise Admins" -Recursive | %{Get-ADUser -identity $_.DistinguishedName} | select name, Enabled
+
+        -Get-ADUser: Fetches domain user objects.
+          Search for secrets: Get-ADUser -Filter * -Properties Description | Select-Object Name, Description (Often admins hide passwords in descriptions)
+          List all Domain Users: Get-ADUser -Filter * | Select-Object SamAccountName, Description
+          Identify Domain Admins: Get-ADGroupMember -Identity "Domain Admins"
+
+        Track Administrative Group Changes: Use Get-WinEvent to find Event ID 4728 (Member added to security-enabled global group) or 4732 (Local group).
+          -Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4728,4732} | Select-Object TimeCreated, Message
+          
+        Search for Privileged Groups: Use the admincount attribute to find groups that have been granted elevated administrative rights.
+          -Get-ADGroup -Filter "admincount -eq 1" | Select-Object Name
+
+        Find Recently Modified Users: Detect if an attacker has modified an account for persistence.
+          -Get-ADUser -Filter * -Properties WhenChanged | Where-Object { $_.WhenChanged -gt (Get-Date).AddDays(-1) }
+
+        Inspect PowerShell Profiles: Check for unauthorized scripts that run every time PowerShell starts.
+          -Test-Path $PROFILE.AllUsersAllHosts, 
+          -Test-Path $PROFILE.CurrentUserAllHosts
+
+        Search for Encoded Commands: Look through security logs for the -EncodedCommand flag, often used to hide malicious payloads.
+          Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4688} | Where-Object { $_.Message -match "-enc" -or $_.Message -match "-EncodedCommand" }
+
+        Identify Suspicious Process Spawning: Monitor for processes like lsass.exe being dumped (indicates credential harvesting).
+          Look for commands like procdump.exe -ma lsass.exe in process creation logs (Event ID 4688)
+                    # Query Security logs for Event ID 4688 (Process Creation)
+                    $Keywords = @("lsass", "minidump", "procdump", "mimikatz", "sekurlsa")
+                    Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4688} | Where-Object {
+                      $_.Message -match ($Keywords -join "|")
+                      } | Select-Object TimeCreated, @{n='CommandLine';e={$_.Properties[8].Value}}
+
+                        # Query Sysmon for attempts to access LSASS memory
+                        Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-Sysmon/Operational'; Id=10} | Where-Object {
+                            $_.Message -match "lsass.exe" -and $_.Message -match "PROCESS_VM_READ"
+                        } | Select-Object TimeCreated, Message
+        
+        
+        Find Accounts with Non-Expiring Passwords: These are prime targets for long-term compromise.
+          -Get-ADUser -Filter 'PasswordNeverExpires -eq $true' -Properties PasswordNeverExpires
+
+        Audit Trust Relationships: Ensure no unauthorized domain trusts have been established that could allow lateral movement from a compromised forest.
+          -Get-ADTrust -Filter *
+        
+        Kerberoasting (Finding SPNs): Search for users with a ServicePrincipalName. These accounts can be targeted to crack their passwords offline.
+          Get-ADUser -Filter {ServicePrincipalName -ne "$null"} -Properties ServicePrincipalName  ----Priv Esc
+          
+        AS-REP Roasting: Find users that do not require Kerberos pre-authentication, allowing you to request a ticket and crack it.
+          Get-ADUser -Filter 'DoesNotRequirePreAuth -eq $True' -Properties DoesNotRequirePreAuth  ----Priv Esc
+
+        Unconstrained Delegation: Identify computers or users trusted for delegation, which can be abused to impersonate any user who authenticates to them.
+          Get-ADComputer -Filter {TrustedForDelegation -eq $True}
+
+  ##Display Resultant Set of Policy(RSoP) Information##
+    Display Help
+      -gpresult /?
+
+    Output the computer and user node settings of a user
+      -gpresult /user Webster /v
+      -gpresult /user Administrator /v
+      
+    Displays data about the machine and logged on user
+      gpresult /r
+      
+    Displays data about the machine and logged on user
+      gpresult /r
+      
+    Force any group policy setting to take affect immediately versus rebooting the computer
+      gpupdate /force
+
+      
+--Linux ch.sh--
+  
