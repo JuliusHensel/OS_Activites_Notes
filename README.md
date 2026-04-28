@@ -1,4 +1,20 @@
 --Powershell ch.sh--
+  ##Finding network connections##
+    Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles" | 
+      ForEach-Object {Get-ItemProperty $_.PSPath} | 
+      Select-Object ProfileName, Description, DateCreated, DateLastConnected
+
+        $ProfilePath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles"       
+        Get-ChildItem $ProfilePath | ForEach-Object {
+            $item = Get-ItemProperty $_.PSPath
+            [PSCustomObject]@{
+                SSID           = $item.ProfileName
+                Category       = if($item.Category -eq 1) {"Private"} else {"Public"}
+                DateCreated    = $_.Name # This unique ID links to the 'Signatures' subkey
+                RegistryPath   = $_.PSPath
+            }
+        } | Format-Table -AutoSize
+
   ##Finding Files and Searching Content##
     Get-ChildItem -Path C:\ -Recurse -Include *flag*, *secret*, *cred* -ErrorAction SilentlyContinue
     Searching for a flag: Get-ChildItem -Recurse | Select-String "CTF{"
