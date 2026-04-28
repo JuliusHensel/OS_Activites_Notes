@@ -182,9 +182,37 @@
 
       
 --Linux ch.sh--
+  
   ##Basic Recon##
+    sudo -l
+      list commands you are allowed to run with/without sudo
+      shows your /etc/sudoers.d/<Yourusername>
+
+    sudo -l -U <Checks users perms>
+    
+    command shows what groups ur in..
+      groups
+
+    Shows uid,gid, and groups for a user
+      id
+      id <USERNAME>
+
+    Recon for strange ports open:
+      sudo ss -tulpin
+      suod lsof -i -P -n
+    
     Get Default target on sysmd machines
       - systemctl get-default
+      
+    recon for priv esc  
+      find / -perm -4000 -type f 2>/dev/null ----POC/Priv esc
+    
+    
+      who: Shows who is logged in right now and from where.
+
+      last: Shows a history of recent logins. This is vital for finding who was on the system during an incident.
+      
+      id <username>: Quickly tells you the UID and group memberships for a specific name.
       
   ##Logs and Auditing##
   Check for kernal messages from previous boots:
@@ -210,7 +238,44 @@
       
     Check if Secure  boot is enabled:
       dmesg | grep -i "secure boot"
+      
   ##MD5 hacks##
     If need to hash a specific word
       echo -n "word" | md5sum
       
+  ##Process Validation##
+      Spot temporary process like orphans or zombies
+        htop --> ps -elf
+      
+      See the user (UID) and the command for all running processes
+        ps -eo user,pid,ppid,command ----if detect a suspionss process running
+        
+      List everything the process has open
+        sudo lsof -p [PID]
+        
+      Check for Ancestry
+        ps -fjp [PID]
+      -p shows PIDs, -s shows parents of the specific PID, -u shows user transitions
+        pstree -aps [PID]
+        
+      allows you to see every interaction between the process and the Linux kernel.
+      sudo strace -p [PID] -s 80
+      
+      Check for sus port/process
+        sudo lsof -i -P -n
+      
+      /proc investagation
+        cat /proc/<PID>/cmdline
+        ls /proc/<PID>/exe
+        string /proc/<PID>/environ
+        
+      Summary Checklist for a Suspicious Process:
+        Where is it? (ls -l /proc/[PID]/exe)
+        
+        Who started it? (ps -o user,ppid,start -p [PID])
+        
+        What is it saying? (sudo lsof -i -p [PID])
+        
+        What is it doing right now? (sudo strace -p [PID])
+        
+            
