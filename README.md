@@ -166,4 +166,35 @@
 
       
 --Linux ch.sh--
-  
+  ##Basic Recon##
+    Get Default target on sysmd machines
+      - systemctl get-default
+      
+  ##Logs and Auditing##
+  Check for kernal messages from previous boots:
+    journalctl -k
+    journalctl -k -b -1
+      
+  List all available boots:
+    journalctl --list-boots
+
+  View kernel messages from a specific date:
+      journalctl -k --since "2026-04-26 23:00:00" --until "2026-04-27 01:00:00"
+
+      
+  ##MBR##
+    Backup the MBR (first 512 bytes):
+      - dd if=/dev/sda of=mbr_backup.bin bs=512 count=1
+
+    Extract the Partition Table only:
+      - dd if=/dev/sda of=partition_table.bin bs=1 skip=446 count=64
+      
+    Create a full disk image:
+      dd if=/dev/sdb of=/path/to/evidence_disk.img bs=4k conv=noerror,sync
+      
+    Check if Secure  boot is enabled:
+      dmesg | grep -i "secure boot"
+  ##MD5 hacks##
+    If need to hash a specific word
+      echo -n "word" | md5sum
+      
