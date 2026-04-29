@@ -1,5 +1,8 @@
 --Powershell ch.sh--
   ##Basic psh##
+  Search Intire file system for file
+    Get-ChildItem -Path C:\ -Filter "filename.txt" -Recurse -ErrorAction SilentlyContinue
+  
   Getting Methods 
     Get-Process | Get-Member | Where-Object {$_.Membertype -match "Method"}
     # Displays all objects with Method in their name from the results from
@@ -199,7 +202,24 @@
     Force any group policy setting to take affect immediately versus rebooting the computer
       gpupdate /force
 
+  ##SMB share##
+      # Lists all shares, including the path and description
+      Get-SmbShare
       
+      List shares on a REMOTE computer to check for anomalies
+        Get-SmbShare -CimSession "RemotePCName"
+      
+      Filter for a specific suspicious user
+        Get-SmbSession | Where-Object {$_.UserName -like "*TargetUser*"}
+        
+      Shows every file currently opened via SMB
+        Get-SmbOpenFile
+        
+      Force close a specific open file (useful if a process is locked by an attacker)
+        Close-SmbOpenFile -FileId <IDNumber>
+
+    Lists who has permission to the share itself (not the folder)
+      Get-SmbShareAccess -Name "FinanceData"
 --Linux ch.sh--
   
   ##Basic Recon##
