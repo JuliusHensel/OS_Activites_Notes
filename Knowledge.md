@@ -1,78 +1,67 @@
---Linux--
-  ##Process##
-    - init (/sbin/init) has a process ID of 1, and its parent, the kernel, has a PID of 0.
-    - Modern Linux kernels and distros also have [kthreadd], which is a kernel thread daemon. It is second after init and has a PID of 2.
-    - All kernel processes are fork()`ed from `[kthreadd]
-    - All user processes are fork()`ed from `/sbin/init or a direct ancestor
-    - Kernel processes can be identified by names enclosed in square brackets [ ]
-    - 
-    RUID - Real User ID; Who actualy started the process
-    EUID -  Effective User ID; Whose "permissions" the process is currently using
-    SID  -  Sessions ID or assigigned depsite of UID
-      NOTE: Attackers obfucsate there actions by hopping between account SID's remain the same and allowes you to expose the intire attack surface --POC
-    AUID -  
-    UID  -
+# Linux
 
-    Zombie - Are process that have stoped excuting but havent been reaped (They cannot be killed, they take pids, and use zero resources)
-    Orphan - Orphan process are sub-process that had there parrent process reaped (Adopted by /bin/init with a PPID of 1, is killed)
-    Daemon - Intentionaly Oprhaned process that douse not die until told so (PPID of 1 ex: ssh)
-    
-  ##Files##
-    
+## Process Management
 
-  /sbin/init - 
-  /lib/systemd/systemd - 
-   /etc/crontab - 
-    NOTE: look for scripts running as root
-   /var/spool/cron/crontabs/ - 
-    NOTE: look for scripts running as root
-    /var/log/auth.log -
-      NOTE: Check file for bruteforce attempts and failed logings --POC
-    /var/log/secure -
-      NOTE: Check file for bruteforce attempts and failed logings --POC
-    /etc/login.defs - 
-    /etc/passwd - username:password:UID:GID:comment:home_directory:shell 
-    /etc/group - shows which users belongs to which group
-    /etc/shadow -  password file
-    /etc/sudoers or /etc/sudoers.d/ -  Shows Permissions for User accounts
-      NOTE: If System Account have a NOPASSWD priv may be a sighn of compromise ----POC/Priv Esc
-    
-    
-  ##User accounts##
-    HUMAN
-        - typicaly run /bin/bash or /bin/sh
-    SYSTEM
-        - typicaly run /bin/nologin or /bin/false
-          note: System Users running a normal shell may be a sign of compromise ----POC
+### Core Processes
+- **init** (`/sbin/init`) - PID 1, started by kernel (PID 0)
+- **kthreadd** - Kernel thread daemon, PID 2
+  - All kernel processes are forked from `kthreadd`
+  - Kernel processes identified by names in square brackets `[ ]`
+- **User processes** - Forked from `/sbin/init` or a direct ancestor
 
+### Process IDs and Sessions
+- **RUID** - Real User ID; who actually started the process
+- **EUID** - Effective User ID; whose permissions the process is currently using
+- **SID** - Session ID (assigned despite UID)
+  - *Note: Attackers obfuscate actions by hopping between accounts. SID remains the same and allows you to expose the entire attack surface* --POC
+- **AUID** - (To be defined)
+- **UID** - (To be defined)
 
---Windows--
-  Registry Locations for Persistence
-  
-    HKLM\Software\Microsoft\Windows\CurrentVersion\Run
-    
-    HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce
-    
-    HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\Run
-    
-    HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\RunOnce
-    
-    HKLM\SYSTEM\CurrentControlSet\services
-    
-    HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders
-          
-  Registry Locations for Persistence
-  
-    HKLM\Software\Microsoft\Windows\CurrentVersion\Run
-    
-    HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce
-    
-    HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\Run
-    
-    HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\RunOnce
-    
-    HKLM\SYSTEM\CurrentControlSet\services
-    
-    HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders
+### Process States
+- **Zombie** - Processes that stopped executing but haven't been reaped
+  - Cannot be killed, take PIDs, use zero resources
+- **Orphan** - Sub-processes whose parent was reaped
+  - Adopted by `/bin/init` with PPID of 1
+- **Daemon** - Intentionally orphaned processes that persist until terminated
+  - PPID of 1 (e.g., ssh)
 
-  
+## Important Files
+
+| File | Purpose | Notes |
+|------|---------|-------|
+| `/sbin/init` | Main init system | |
+| `/lib/systemd/systemd` | Modern systemd init | |
+| `/etc/crontab` | System cron jobs | Look for scripts running as root |
+| `/var/spool/cron/crontabs/` | User cron jobs | Look for scripts running as root |
+| `/var/log/auth.log` | Authentication logs | Check for brute force attempts and failed logins --POC |
+| `/var/log/secure` | Security logs | Check for brute force attempts and failed logins --POC |
+| `/etc/login.defs` | Login defaults | |
+| `/etc/passwd` | User database | Format: `username:password:UID:GID:comment:home_directory:shell` |
+| `/etc/group` | Group membership | Shows which users belong to which group |
+| `/etc/shadow` | Password file | |
+| `/etc/sudoers` `/etc/sudoers.d/` | Sudo permissions | Shows permissions for user accounts. *If system accounts have NOPASSWD privileges, may indicate compromise* --POC/Priv Esc |
+
+## User Accounts
+
+### Human Accounts
+- Typically run `/bin/bash` or `/bin/sh`
+
+### System Accounts
+- Typically run `/bin/nologin` or `/bin/false`
+- *Note: System users running a normal shell may indicate compromise* --POC
+
+---
+
+# Windows
+
+## Registry Locations for Persistence
+
+### Local Machine (HKLM) - All Users
+- `HKLM\Software\Microsoft\Windows\CurrentVersion\Run`
+- `HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce`
+- `HKLM\SYSTEM\CurrentControlSet\services`
+- `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders`
+
+### User Hive (HKU) - Specific Users
+- `HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\Run`
+- `HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\RunOnce`
