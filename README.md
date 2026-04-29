@@ -1,4 +1,22 @@
 --Powershell ch.sh--
+  ##Basic psh##
+  Getting Methods 
+    Get-Process | Get-Member | Where-Object {$_.Membertype -match "Method"}
+    # Displays all objects with Method in their name from the results from
+    Get-Member of the Get-Process cmdlet
+  
+  ##Process validation
+    
+    List Process
+      Get-Process | Select-Object Name, ID, path | Where-object {$_.ID -lt 1000} # List all the processes with a PID lower than 1000
+      (Get-Process | Select-Object Name, ID, path | Where-object {$_.ID -lt 1000}).count # Count processes with a PID lower than 1000
+    
+    Start or Stop a Process
+      Start-Process calc # Open an instance of calculator
+      (Get-Process calculator *).kill() # Stops a named process using the kill() method directly
+      Stop-Process -name calculator* # Uses a cmdlet to call the Process.Kill method
+
+    
   ##Finding network connections##
     Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles" | 
       ForEach-Object {Get-ItemProperty $_.PSPath} | 
@@ -88,6 +106,7 @@
 
         Change the password
           -Set-AdAccountPassword -Identity guest -NewPassword (ConvertTo-SecureString -AsPlaintext -String "PassWord12345!!" -Force)
+          
         Add the user to an Admin Group
           -Add-ADGroupMember -Identity "Domain Admins" -Members guest
 
@@ -184,6 +203,9 @@
 --Linux ch.sh--
   
   ##Basic Recon##
+    find any file that matches name pattern
+      find / -name * -exec ls -lisa {} + 2>/dev/null
+    
     sudo -l
       list commands you are allowed to run with/without sudo
       shows your /etc/sudoers.d/<Yourusername>
@@ -268,6 +290,8 @@
         cat /proc/<PID>/cmdline
         ls /proc/<PID>/exe
         string /proc/<PID>/environ
+
+      
         
       Summary Checklist for a Suspicious Process:
         Where is it? (ls -l /proc/[PID]/exe)
