@@ -7,7 +7,18 @@
     Get-Process | Get-Member | Where-Object {$_.Membertype -match "Method"}
     # Displays all objects with Method in their name from the results from
     Get-Member of the Get-Process cmdlet
-  
+
+  To determine whether individual profiles have been created on the local computer: 
+    Test-Path -Path $profile.currentUsercurrentHost
+    Test-Path -Path $profile.currentUserAllHosts
+    Test-Path -Path $profile.AllUsersAllHosts
+    Test-Path -Path $profile.AllUserscurrentHost
+
+  Get-Cimclass * # Lists all CIM Classes 
+    Get-CimInstance –Namespace root\\securitycenter2 –ClassName antispywareproduct #Lists the antispywareproduct class from the root/security instance 
+    Get-CimInstance -ClassName Win32_LogicalDisk -Filter “DriveType=3” | gm # Shows properties and methods for this Instance 
+    Get-WmiObject -Class Win32_LogicalDisk -Filter “DriveType=3” # Using the Windows Management Instrumentation method
+      
   ##Process validation
     
     List Process
@@ -321,5 +332,6 @@
         What is it saying? (sudo lsof -i -p [PID])
         
         What is it doing right now? (sudo strace -p [PID])
-        
+
+  
             
