@@ -2,6 +2,11 @@
   ##Basic psh##
   Search Intire file system for file
     Get-ChildItem -Path C:\ -Filter "filename.txt" -Recurse -ErrorAction SilentlyContinue
+    
+  Search intire file system for hidden ads
+    Get-ChildItem -Path C:\ -Recurse -File -ErrorAction SilentlyContinue | Get-Item -Stream * | Where-Object { $_.Stream -ne ':$DATA' }
+
+  
   
   Getting Methods 
     Get-Process | Get-Member | Where-Object {$_.Membertype -match "Method"}
