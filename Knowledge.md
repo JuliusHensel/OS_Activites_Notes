@@ -1,67 +1,39 @@
-# Linux
+# CTF and Cybersecurity Contexts
 
-## Process Management
+## Capture The Flag (CTF) Competitions
 
-### Core Processes
-- **init** (`/sbin/init`) - PID 1, started by kernel (PID 0)
-- **kthreadd** - Kernel thread daemon, PID 2
-  - All kernel processes are forked from `kthreadd`
-  - Kernel processes identified by names in square brackets `[ ]`
-- **User processes** - Forked from `/sbin/init` or a direct ancestor
+**Overview:** CTF competitions are simulations designed to test participants' cybersecurity skills. They can be categorized into various types, including Jeopardy-style and Attack-Defense.
 
-### Process IDs and Sessions
-- **RUID** - Real User ID; who actually started the process
-- **EUID** - Effective User ID; whose permissions the process is currently using
-- **SID** - Session ID (assigned despite UID)
-  - *Note: Attackers obfuscate actions by hopping between accounts. SID remains the same and allows you to expose the entire attack surface* --POC
-- **AUID** - (To be defined)
-- **UID** - (To be defined)
+### Jeopardy-style CTFs
+- Participants solve challenges from different categories such as Web, Pwn, Crypto, and Reverse Engineering.
 
-### Process States
-- **Zombie** - Processes that stopped executing but haven't been reaped
-  - Cannot be killed, take PIDs, use zero resources
-- **Orphan** - Sub-processes whose parent was reaped
-  - Adopted by `/bin/init` with PPID of 1
-- **Daemon** - Intentionally orphaned processes that persist until terminated
-  - PPID of 1 (e.g., ssh)
+### Attack-Defense CTFs
+- Teams attack each other while defending their own systems, focusing on real-world attack and defense strategies.
 
-## Important Files
+## Importance of CTFs in Cybersecurity
+- **Skill Development:** CTFs provide a practical environment for learning and applying cybersecurity concepts.
+- **Team Collaboration:** They foster teamwork and communication among participants.
+- **Networking Opportunities:** Participants often meet industry professionals and fellow enthusiasts.
 
-| File | Purpose | Notes |
-|------|---------|-------|
-| `/sbin/init` | Main init system | |
-| `/lib/systemd/systemd` | Modern systemd init | |
-| `/etc/crontab` | System cron jobs | Look for scripts running as root |
-| `/var/spool/cron/crontabs/` | User cron jobs | Look for scripts running as root |
-| `/var/log/auth.log` | Authentication logs | Check for brute force attempts and failed logins --POC |
-| `/var/log/secure` | Security logs | Check for brute force attempts and failed logins --POC |
-| `/etc/login.defs` | Login defaults | |
-| `/etc/passwd` | User database | Format: `username:password:UID:GID:comment:home_directory:shell` |
-| `/etc/group` | Group membership | Shows which users belong to which group |
-| `/etc/shadow` | Password file | |
-| `/etc/sudoers` `/etc/sudoers.d/` | Sudo permissions | Shows permissions for user accounts. *If system accounts have NOPASSWD privileges, may indicate compromise* --POC/Priv Esc |
+## Technical Details and Security Implications
 
-## User Accounts
+### Key Concepts:
+1. **Vulnerability Assessment:** Skills in identifying security vulnerabilities are critical. Tools like Nmap and Nessus are often used.
+2. **Exploitation Techniques:** Understanding various exploitation techniques, from buffer overflows to SQL injection, is essential to successfully capture flags.
+3. **Post-Exploitation:** Once access is obtained, maintaining it through techniques like privilege escalation is crucial.
 
-### Human Accounts
-- Typically run `/bin/bash` or `/bin/sh`
+### Common Tools Used in CTFs:
+- **Burp Suite:** For web vulnerabilities.
+- **Metasploit:** Framework for developing and executing exploit code.
+- **Wireshark:** For network analysis.
 
-### System Accounts
-- Typically run `/bin/nologin` or `/bin/false`
-- *Note: System users running a normal shell may indicate compromise* --POC
+### Security Implications:
+- CTFs often mimic real-world scenarios, providing insights into threat modeling and vulnerability management.
+- Skills acquired can be applied in pen-testing roles, helping organizations identify and mitigate real threats.
+
+## Conclusion
+CTFs serve as both competitive events and valuable educational platforms in the field of cybersecurity, expanding knowledge and practical skills essential for aspiring professionals.
 
 ---
 
-# Windows
-
-## Registry Locations for Persistence
-
-### Local Machine (HKLM) - All Users
-- `HKLM\Software\Microsoft\Windows\CurrentVersion\Run`
-- `HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce`
-- `HKLM\SYSTEM\CurrentControlSet\services`
-- `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders`
-
-### User Hive (HKU) - Specific Users
-- `HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\Run`
-- `HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\RunOnce`
+*This document will continue to be updated as new security challenges and techniques emerge.*
