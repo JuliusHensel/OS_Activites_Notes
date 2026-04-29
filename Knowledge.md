@@ -44,4 +44,35 @@
     SYSTEM
         - typicaly run /bin/nologin or /bin/false
           note: System Users running a normal shell may be a sign of compromise ----POC
-      
+
+
+--Windows--
+  Registry Locations for Persistence
+  
+    HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+    
+    HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce
+    
+    HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\Run
+    
+    HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\RunOnce
+    
+    HKLM\SYSTEM\CurrentControlSet\services
+    
+    HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders
+          
+  Registry Locations for Persistence
+  
+    HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+    
+    HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce
+    
+    HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\Run
+    
+    HKU\<SID>\Software\Microsoft\Windows\CurrentVersion\RunOnce
+    
+    HKLM\SYSTEM\CurrentControlSet\services
+    
+    HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders
+
+  
