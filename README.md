@@ -23,6 +23,37 @@
     Get-CimInstance –Namespace root\\securitycenter2 –ClassName antispywareproduct #Lists the antispywareproduct class from the root/security instance 
     Get-CimInstance -ClassName Win32_LogicalDisk -Filter “DriveType=3” | gm # Shows properties and methods for this Instance 
     Get-WmiObject -Class Win32_LogicalDisk -Filter “DriveType=3” # Using the Windows Management Instrumentation method
+  Get-CPU
+    Get-CimInstance -ClassName Win32_Processor
+
+  ##Unzip file 1000x##
+    # Set the initial file name
+$zipFile = "flag.zip"
+$extractPath = "./extracted"
+
+for ($i = 1; $i -le 1000; $i++) {
+    # Extract the current zip file
+    Expand-Archive -Path $zipFile -DestinationPath $extractPath -Force
+    
+    # Find the next zip file inside the extraction folder
+    $nextZip = Get-ChildItem -Path $extractPath -Filter "*.zip" | Select-Object -First 1
+    
+    if ($null -eq $nextZip) {
+        Write-Host "No more zip files found at layer $i."
+        break
+    }
+
+    # Update $zipFile to the newly extracted file for the next iteration
+    $zipFile = $nextZip.FullName
+    
+    # Optional: Log progress
+    if ($i % 100 -eq 0) {
+        Write-Host "Layer $i completed..."
+    }
+}
+
+Write-Host "Done! Check the '$extractPath' folder for your flag."
+
       
   ##Process validation
     
@@ -326,6 +357,14 @@
         cat /proc/<PID>/cmdline
         ls /proc/<PID>/exe
         string /proc/<PID>/environ
+
+      ##Xpather##
+      Greping for Ip addr
+        xmllint --xpath "//address[@addrtype='ipv4']/@addr" newfile.xml
+        
+      Greping for Ip and port
+        xmllint --xpath "//address[@addrtype='ipv4']/@addr | //port/@portid" newfile.xml
+
 
       
         
